@@ -12,6 +12,7 @@ router
 	.post(
 		body('email').isEmail(),
 		body('password').isLength({ min: 6 }),
+		body('fingerprint').isString(),
 		userController.signUp
 	);
 

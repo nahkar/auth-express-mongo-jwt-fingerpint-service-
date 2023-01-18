@@ -18,6 +18,10 @@ const SessionSchema = new Schema({
 		type: String,
 		required: true,
 	},
+	fingerprint: {
+		type: String,
+		required: true,
+	},
 	expiresAt: {
 		type: Date,
 		required: true,

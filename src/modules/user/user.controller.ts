@@ -23,7 +23,10 @@ class UserController {
 				next(ApiError.BadRequest('Validation Error', errors.array()));
 			}
 
-			const user = await userService.signUp(new SignUpDtoRequest(req.body));
+			const user = await userService.signUp({
+				...new SignUpDtoRequest(req.body),
+				ip: req.ip,
+			});
 
 			res.status(httpStatus.CREATED).json(user);
 		} catch (error) {

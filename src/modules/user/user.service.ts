@@ -1,10 +1,11 @@
 import { User } from '@models/User.model';
 
 import { GetUserDtoResponse } from './dto/GetUserDtoResponse';
-import { IUser } from '@interfaces/user.interface';
 import { genSaltSync, hashSync } from 'bcrypt';
 import { SignUpDtoResponse } from './dto/SignUpDtoResponse';
 import { ApiError } from '@exceptions/ApiError';
+import { RegistrationPayloadT } from '@interfaces/types';
+import { sessionService } from '@modules/session/session.service';
 
 class UserService {
 	constructor() {}
@@ -22,11 +23,7 @@ class UserService {
 		}
 	}
 
-	async signUp({
-		email,
-		password,
-		fingerprint,
-	}: Pick<IUser, 'email' | 'password' | 'fingerprint'>) {
+	async signUp({ email, password, fingerprint, ip }: RegistrationPayloadT) {
 		const isUserExist = await User.findOne({ email: email });
 
 		if (isUserExist) {
@@ -36,6 +33,17 @@ class UserService {
 		const hashedPassword = this.hashPassword(password);
 
 		const user = await User.create({ email, password: hashedPassword });
+
+		const tokens = {
+			accessToken: sessionService.generateAccessToken({
+				id: user.id,
+				email: user.email,
+			}),
+			refreshToken: sessionService.generateRefreshToken({
+				id: user.id,
+				email: user.email,
+			}),
+		};
 
 		const userDtoResponse = new SignUpDtoResponse(user.toObject());
 
