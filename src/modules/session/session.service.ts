@@ -17,6 +17,14 @@ class SessionService {
 		});
 	}
 
+	validateRefreshToken(token: string) {
+		try {
+			return jwt.verify(token, process.env.JWT_REFRESH_SECRET || '');
+		} catch (error) {
+			return null;
+		}
+	}
+
 	async createSession(data: CreateSessionT) {
 		await Session.create(data);
 	}

@@ -1,7 +1,7 @@
 import { User } from '@models/User.model';
 
 import { GetUserDtoResponse } from './dto/GetUserDtoResponse';
-import { genSaltSync, hashSync } from 'bcrypt';
+import { compare, genSaltSync, hashSync } from 'bcrypt';
 import { ApiError } from '@exceptions/ApiError';
 import { SignInPayloadT, SignUpPayloadT } from '@interfaces/types';
 import { sessionService } from '@modules/session/session.service';
@@ -9,8 +9,12 @@ import { sessionService } from '@modules/session/session.service';
 class UserService {
 	constructor() {}
 
-	hashPassword(password: string): string {
+	private hashPassword(password: string): string {
 		return hashSync(password, genSaltSync(8));
+	}
+
+	private async comparePassword(password1: string, password2: string) {
+		return await compare(password1, password2);
 	}
 
 	async getUsers() {
@@ -69,6 +73,12 @@ class UserService {
 		const user = await User.findOne({ email: email });
 
 		if (!user) {
+			throw ApiError.BadRequest(`Bad credentials`);
+		}
+
+		const isPasswordEqual = await this.comparePassword(password, user.password);
+
+		if (!isPasswordEqual) {
 			throw ApiError.BadRequest(`Bad credentials`);
 		}
 
