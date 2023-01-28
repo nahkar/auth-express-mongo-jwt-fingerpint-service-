@@ -4,4 +4,4 @@ import { userRouter } from '@modules/user/user.routes';
 
 export const router = Router();
 
-router.use('/user', userRouter);
+router.use('/auth', userRouter);
