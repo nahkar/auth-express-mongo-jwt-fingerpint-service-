@@ -45,7 +45,10 @@ class UserService {
 			}),
 		};
 
-		const userDtoResponse = new SignUpDtoResponse(user.toObject());
+		const userDtoResponse = new SignUpDtoResponse({
+			...user.toObject(),
+			accessToken: tokens.accessToken,
+		});
 
 		return userDtoResponse;
 	}
