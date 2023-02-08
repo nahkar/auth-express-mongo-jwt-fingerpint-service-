@@ -23,9 +23,12 @@ class UserController {
 				next(ApiError.BadRequest('Validation Error', errors.array()));
 			}
 
+			const userAgent = req.headers['user-agent'];
+
 			const user = await userService.signUp({
 				...new SignUpDtoRequest(req.body),
 				ip: req.ip,
+				userAgent,
 			});
 
 			res.status(httpStatus.CREATED).json(user);

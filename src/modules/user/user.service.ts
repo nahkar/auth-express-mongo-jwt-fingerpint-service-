@@ -23,7 +23,13 @@ class UserService {
 		}
 	}
 
-	async signUp({ email, password, fingerprint, ip }: RegistrationPayloadT) {
+	async signUp({
+		email,
+		password,
+		fingerprint,
+		ip,
+		userAgent,
+	}: RegistrationPayloadT) {
 		const isUserExist = await User.findOne({ email: email });
 
 		if (isUserExist) {
@@ -44,6 +50,14 @@ class UserService {
 				email: user.email,
 			}),
 		};
+
+		await sessionService.createSession({
+			userId: user.id,
+			refreshToken: tokens.refreshToken,
+			userAgent,
+			fingerprint,
+			ip,
+		});
 
 		const userDtoResponse = new SignUpDtoResponse({
 			...user.toObject(),

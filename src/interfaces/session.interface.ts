@@ -4,6 +4,7 @@ export interface ISession {
 	ip: string;
 	fingerprint: string;
 	refreshToken: string;
+	userAgent?: string;
 	expiresAt: string;
 	createdAt: string;
 }

@@ -22,6 +22,9 @@ const SessionSchema = new Schema({
 		type: String,
 		required: true,
 	},
+	userAgent: {
+		type: String,
+	},
 	expiresAt: {
 		type: Date,
 		required: true,
@@ -37,4 +40,4 @@ const SessionSchema = new Schema({
 	},
 });
 
-export const User = model('Session', SessionSchema);
+export const Session = model('Session', SessionSchema);

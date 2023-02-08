@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import { TokenPayloadT } from '@interfaces/types';
+import { CreateSessionT, TokenPayloadT } from '@interfaces/types';
+import { Session } from '@models/Session.model';
 
 dotenv.config();
 
@@ -14,6 +15,10 @@ class SessionService {
 		return jwt.sign(payload, process.env.JWT_REFRESH_SECRET || '', {
 			expiresIn: `${process.env.SESSION_EXPIRES_DAYS}d`,
 		});
+	}
+
+	async createSession(data: CreateSessionT) {
+		await Session.create(data);
 	}
 }
 
