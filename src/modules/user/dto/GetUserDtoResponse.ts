@@ -5,8 +5,8 @@ export class GetUserDtoResponse {
 	email: string;
 	createdAt: string;
 	constructor(model: IUser) {
-		this.id = model._id;
+		this.id = model._id.toString();
 		this.email = model.email;
-		this.createdAt = model.createdAt;
+		this.createdAt = model.createdAt.toString();
 	}
 }

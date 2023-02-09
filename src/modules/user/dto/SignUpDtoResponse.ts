@@ -5,7 +5,7 @@ export class SignUpDtoResponse {
 	email: string;
 	accessToken: string;
 	constructor(model: IUser & { accessToken: string }) {
-		this.id = model._id;
+		this.id = model._id.toString();
 		this.email = model.email;
 		this.accessToken = model.accessToken;
 	}

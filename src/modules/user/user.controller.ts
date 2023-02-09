@@ -4,6 +4,8 @@ import { validationResult } from 'express-validator';
 import { SignUpDtoRequest } from './dto/SignUpDtoRequest';
 import httpStatus from 'http-status';
 import { ApiError } from '@exceptions/ApiError';
+import { setTokenCookie } from '@helpers/cookie';
+import { SignUpDtoResponse } from './dto/SignUpDtoResponse';
 
 class UserController {
 	async getUsers(req: Request, res: Response, next: NextFunction) {
@@ -31,7 +33,9 @@ class UserController {
 				userAgent,
 			});
 
-			res.status(httpStatus.CREATED).json(user);
+			setTokenCookie(res, user.refreshToken);
+
+			res.status(httpStatus.CREATED).json(new SignUpDtoResponse(user));
 		} catch (error) {
 			next(error);
 		}

@@ -5,7 +5,7 @@ export class SignUpDtoRequest {
 	email: string;
 	password: string;
 	fingerprint: string;
-	constructor(model: IUser & Pick<ISession, 'fingerprint'>) {
+	constructor(model: IUser & Pick<ISession, 'fingerprint' | 'refreshToken'>) {
 		this.email = model.email;
 		this.password = model.password;
 		this.fingerprint = model.fingerprint;

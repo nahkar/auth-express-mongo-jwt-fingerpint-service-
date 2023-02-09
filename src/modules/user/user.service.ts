@@ -2,7 +2,6 @@ import { User } from '@models/User.model';
 
 import { GetUserDtoResponse } from './dto/GetUserDtoResponse';
 import { genSaltSync, hashSync } from 'bcrypt';
-import { SignUpDtoResponse } from './dto/SignUpDtoResponse';
 import { ApiError } from '@exceptions/ApiError';
 import { RegistrationPayloadT } from '@interfaces/types';
 import { sessionService } from '@modules/session/session.service';
@@ -59,12 +58,11 @@ class UserService {
 			ip,
 		});
 
-		const userDtoResponse = new SignUpDtoResponse({
+		return {
 			...user.toObject(),
 			accessToken: tokens.accessToken,
-		});
-
-		return userDtoResponse;
+			refreshToken: tokens.refreshToken,
+		};
 	}
 }
 

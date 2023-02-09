@@ -3,7 +3,7 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 
 import { apiErrorMiddleware } from '@middlewares/error.middleware';
-import { connectToDatabase } from '@services/db';
+import { connectToDatabase } from '@helpers/db';
 import { router } from '@routes/v1';
 
 dotenv.config();
