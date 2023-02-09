@@ -16,4 +16,13 @@ router
 		userController.signUp
 	);
 
+router
+	.route('/sign-in')
+	.post(
+		body('email').isEmail(),
+		body('password').isLength({ min: 6 }),
+		body('fingerprint').isString(),
+		userController.signIn
+	);
+
 export { router as userRouter };

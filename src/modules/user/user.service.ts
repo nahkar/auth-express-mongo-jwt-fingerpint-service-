@@ -3,7 +3,7 @@ import { User } from '@models/User.model';
 import { GetUserDtoResponse } from './dto/GetUserDtoResponse';
 import { genSaltSync, hashSync } from 'bcrypt';
 import { ApiError } from '@exceptions/ApiError';
-import { RegistrationPayloadT } from '@interfaces/types';
+import { SignInPayloadT, SignUpPayloadT } from '@interfaces/types';
 import { sessionService } from '@modules/session/session.service';
 
 class UserService {
@@ -28,7 +28,7 @@ class UserService {
 		fingerprint,
 		ip,
 		userAgent,
-	}: RegistrationPayloadT) {
+	}: SignUpPayloadT) {
 		const isUserExist = await User.findOne({ email: email });
 
 		if (isUserExist) {
@@ -63,6 +63,16 @@ class UserService {
 			accessToken: tokens.accessToken,
 			refreshToken: tokens.refreshToken,
 		};
+	}
+
+	async signIn({ email, password, fingerprint }: SignInPayloadT) {
+		const user = await User.findOne({ email: email });
+
+		if (!user) {
+			throw ApiError.BadRequest(`Bad credentials`);
+		}
+
+		return {};
 	}
 }
 
