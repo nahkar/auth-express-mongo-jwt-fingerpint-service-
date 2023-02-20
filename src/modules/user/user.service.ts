@@ -8,9 +8,7 @@ class UserService {
 	async getUsers() {
 		try {
 			const users = await User.find();
-			return users.map((user) => ({
-				...new GetUserDtoResponse(user.toObject()),
-			}));
+			return users.map((user) => new GetUserDtoResponse(user.toObject()));
 		} catch (error) {
 			console.log(error);
 		}
