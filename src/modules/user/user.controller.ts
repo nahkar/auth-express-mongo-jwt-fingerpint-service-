@@ -2,9 +2,10 @@ import { NextFunction, Request, Response } from 'express';
 import { userService } from './user.service';
 
 class UserController {
-	getUsers(req: Request, res: Response, next: NextFunction) {
+	async getUsers(req: Request, res: Response, next: NextFunction) {
 		try {
-			res.json(userService.getUsers());
+			const users = await userService.getUsers();
+			res.json(users);
 		} catch (error) {
 			next(error);
 		}
