@@ -2,7 +2,6 @@
   "name": "auth-express-mongo-jwt-fingerpint-service",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "lint": "eslint src/**/*.ts",
     "format": "eslint src/**/*.ts --fix",
