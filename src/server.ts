@@ -1,22 +1,24 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import bodyParser from 'body-parser';
 
 import { connectToDatabase } from 'services/db';
 import { router } from './routes';
+import { apiErrorMiddleware } from '@middlewares/error.middleware';
 
 dotenv.config();
 
 const PORT = process.env.PORT || 3060;
 
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.get('/', (req, res) => {
-	res.send('Please  use /api/v1/ route');
+	res.json({ message: 'Auth API, please go to /api/v1/auth' });
 });
 
 app.use('/api/v1', router);
+
+app.use(apiErrorMiddleware);
 
 const main = () => {
 	app.listen(PORT, async () => {

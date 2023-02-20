@@ -4,6 +4,7 @@ import { GetUserDtoResponse } from './dto/GetUserDtoResponse';
 import { IUser } from '@interfaces/user.interface';
 import { genSaltSync, hashSync } from 'bcrypt';
 import { SignUpDtoResponse } from './dto/SignUpDtoResponse';
+import { ApiError } from '@exceptions/ApiError';
 
 class UserService {
 	constructor() {}
@@ -22,23 +23,19 @@ class UserService {
 	}
 
 	async signUp({ email, password }: Pick<IUser, 'email' | 'password'>) {
-		try {
-			const isUserExist = await User.findOne({ email: email });
+		const isUserExist = await User.findOne({ email: email });
 
-			if (isUserExist) {
-				throw new Error('User already exist');
-			}
-
-			const hashedPassword = this.hashPassword(password);
-
-			const user = await User.create({ email, password: hashedPassword });
-
-			const userDtoResponse = new SignUpDtoResponse(user.toObject());
-
-			return userDtoResponse;
-		} catch (error) {
-			console.log(error);
+		if (isUserExist) {
+			throw ApiError.BadRequest(`User with email: ${email} already exists`);
 		}
+
+		const hashedPassword = this.hashPassword(password);
+
+		const user = await User.create({ email, password: hashedPassword });
+
+		const userDtoResponse = new SignUpDtoResponse(user.toObject());
+
+		return userDtoResponse;
 	}
 }
 

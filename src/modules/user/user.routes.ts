@@ -3,12 +3,16 @@ import { body } from 'express-validator';
 
 import { userController } from './user.controller';
 
-export const userRouter = Router();
+export const router = Router();
 
-userRouter.get('/user', userController.getUsers);
-userRouter.post(
-	'/sign-up',
-	body('email').isEmail(),
-	body('password').isLength({ min: 6 }),
-	userController.signUp
-);
+router.route('/user').get(userController.getUsers);
+
+router
+	.route('/sign-up')
+	.post(
+		body('email').isEmail(),
+		body('password').isLength({ min: 6 }),
+		userController.signUp
+	);
+
+export { router as userRouter };
