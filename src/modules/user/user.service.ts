@@ -22,7 +22,11 @@ class UserService {
 		}
 	}
 
-	async signUp({ email, password }: Pick<IUser, 'email' | 'password'>) {
+	async signUp({
+		email,
+		password,
+		fingerprint,
+	}: Pick<IUser, 'email' | 'password' | 'fingerprint'>) {
 		const isUserExist = await User.findOne({ email: email });
 
 		if (isUserExist) {
