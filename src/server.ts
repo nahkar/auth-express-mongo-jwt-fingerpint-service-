@@ -5,10 +5,11 @@ import dotenv from 'dotenv';
 import { apiErrorMiddleware } from '@middlewares/error.middleware';
 import { connectToDatabase } from '@helpers/db';
 import { router } from '@routes/v1';
+import { SERVER_PORT } from '@config/constants';
 
 dotenv.config();
 
-const PORT = process.env.PORT || 3060;
+const PORT:number = Number(process.env.PORT ) || SERVER_PORT;
 
 const app = express();
 
@@ -24,14 +25,17 @@ app.use('/api/v1', router);
 app.use(apiErrorMiddleware);
 
 const main = () => {
-	app.listen(PORT, async () => {
-		try {
-			await connectToDatabase();
-		} catch (error) {
-			console.log(error);
-		}
-		console.log(`Server started on port ${PORT}`);
-	});
+	app.listen(
+		PORT,
+		void (async () => {
+			try {
+				await connectToDatabase();
+			} catch (error) {
+				console.log(error);
+			}
+			console.log(`Server started on port ${PORT}`);
+		})()
+	);
 };
 
 main();

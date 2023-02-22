@@ -38,7 +38,8 @@
       "@modules/*": ["./modules/*"],
       "@routes/v1": ["./routes/v1/"],
       "@helpers/*": ["./helpers/*"],
-      "@services/*": ["./services/*"]
+      "@services/*": ["./services/*"],
+      "@config/*": ["./config/*"],
     },                                      /* Specify a set of entries that re-map imports to additional lookup locations. */
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     "typeRoots": ["./node_module/@types",

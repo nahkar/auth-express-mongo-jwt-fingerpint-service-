@@ -14,13 +14,13 @@ dotenv.config();
 
 class SessionService {
 	generateAccessToken(payload: TokenPayloadT) {
-		return jwt.sign(payload, process.env.JWT_ACCESS_SECRET || '', {
+		return jwt.sign(payload, process.env.JWT_ACCESS_SECRET ?? '', {
 			expiresIn: '30s',
 		});
 	}
 	generateRefreshToken(payload: TokenPayloadT) {
-		return jwt.sign(payload, process.env.JWT_REFRESH_SECRET || '', {
-			expiresIn: `${process.env.SESSION_EXPIRES_DAYS}d`,
+		return jwt.sign(payload, process.env.JWT_REFRESH_SECRET ?? '', {
+			expiresIn: `${process.env.SESSION_EXPIRES_DAYS ?? ''}d`,
 		});
 	}
 
@@ -33,7 +33,7 @@ class SessionService {
 
 	validateRefreshToken(token: string) {
 		try {
-			return jwt.verify(token, process.env.JWT_REFRESH_SECRET || '');
+			return jwt.verify(token, process.env.JWT_REFRESH_SECRET ?? '');
 		} catch (error) {
 			return null;
 		}
@@ -46,7 +46,7 @@ class SessionService {
 	async updateOrCreateSession(
 		searchParams: SearchParamsUpdateOrCreateSessionT,
 		updateParams: UpdateParamsUpdateOrCreateSessionT,
-		upsert: boolean = true
+		upsert = true
 	) {
 		return await Session.updateOne(
 			{ userId: searchParams.userId, fingerprint: searchParams.fingerprint },

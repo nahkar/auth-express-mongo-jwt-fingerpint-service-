@@ -6,12 +6,13 @@ import { ApiError } from '@exceptions/ApiError';
 import { sessionService } from '@modules/session/session.service';
 
 import type { SignInPayloadT, SignUpPayloadT } from './types';
+import { Session } from '@models/Session.model';
+import { MAX_COUNT_OF_SESSIONS, SALT_COUNT } from '@config/constants';
 
 class UserService {
-	constructor() {}
 
 	private hashPassword(password: string): string {
-		return hashSync(password, genSaltSync(8));
+		return hashSync(password, genSaltSync(Number(SALT_COUNT)));
 	}
 
 	private async comparePassword(password1: string, password2: string) {
@@ -45,12 +46,12 @@ class UserService {
 		const user = await User.create({ email, password: hashedPassword });
 
 		const tokens = sessionService.generateRefreshAndAccessTokens({
-			id: user.id,
+			id: user.id as string,
 			email: user.email,
 		});
 
 		await sessionService.createSession({
-			userId: user.id,
+			userId: user._id,
 			refreshToken: tokens.refreshToken,
 			userAgent,
 			fingerprint,
@@ -74,18 +75,29 @@ class UserService {
 		const user = await User.findOne({ email: email });
 
 		if (!user) {
-			throw ApiError.BadRequest(`Bad credentials`);
+			throw ApiError.BadRequest('Bad credentials');
 		}
 
 		const isPasswordEqual = await this.comparePassword(password, user.password);
 
 		if (!isPasswordEqual) {
-			throw ApiError.BadRequest(`Bad credentials`);
+			throw ApiError.BadRequest('Bad credentials');
 		}
 		const tokens = sessionService.generateRefreshAndAccessTokens({
-			id: user.id,
+			id: user.id as string,
 			email: user.email,
 		});
+
+		// TODO: Check Model.countDocuments({ userId: user._id, fingerprint }) > 5 remove and create a new
+		const countOfSession = await Session.countDocuments({
+			userId: user._id,
+		});
+
+		if (countOfSession > MAX_COUNT_OF_SESSIONS) {
+			// Todo: Remove all sessions
+		}
+
+		console.log(countOfSession);
 
 		const session = await sessionService.updateOrCreateSession(
 			{ userId: user._id, fingerprint },
