@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
+import httpStatus from 'http-status';
+
 import { userService } from './user.service';
 import { validationResult } from 'express-validator';
 import { SignUpDtoRequest } from './dto/SignUpDtoRequest';
-import httpStatus from 'http-status';
 import { ApiError } from '@exceptions/ApiError';
 import { setTokenCookie } from '@helpers/cookie';
 import { SignUpDtoResponse } from './dto/SignUpDtoResponse';
@@ -52,13 +53,13 @@ class UserController {
 
 			const userAgent = req.headers['user-agent'];
 
-			await userService.signIn({
+			const data = await userService.signIn({
 				...new SignInDtoRequest(req.body),
 				ip: req.ip,
 				userAgent,
 			});
 
-			res.status(httpStatus.CREATED).json({});
+			res.status(httpStatus.CREATED).json(data);
 		} catch (error) {
 			next(error);
 		}

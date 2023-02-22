@@ -40,4 +40,8 @@ const SessionSchema = new Schema({
 	},
 });
 
+SessionSchema.pre('updateOne', function () {
+	this.set({ createdAt: new Date() });
+});
+
 export const Session = model('Session', SessionSchema);

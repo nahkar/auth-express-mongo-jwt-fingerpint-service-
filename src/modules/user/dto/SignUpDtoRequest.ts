@@ -1,5 +1,5 @@
-import { ISession } from '@interfaces/session.interface';
-import { IUser } from '@interfaces/user.interface';
+import type { ISession } from '@interfaces/session.interface';
+import type { IUser } from '@interfaces/user.interface';
 
 export class SignUpDtoRequest {
 	email: string;

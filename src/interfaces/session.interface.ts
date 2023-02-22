@@ -1,6 +1,8 @@
+import { Types } from 'mongoose';
+
 export interface ISession {
-	_id: string;
-	userId: string;
+	_id: Types.ObjectId;
+	userId: Types.ObjectId;
 	ip: string;
 	fingerprint: string;
 	refreshToken: string;

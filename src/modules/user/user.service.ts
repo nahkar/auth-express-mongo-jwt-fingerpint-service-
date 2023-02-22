@@ -1,10 +1,11 @@
-import { User } from '@models/User.model';
-
-import { GetUserDtoResponse } from './dto/GetUserDtoResponse';
 import { compare, genSaltSync, hashSync } from 'bcrypt';
+
+import { User } from '@models/User.model';
+import { GetUserDtoResponse } from './dto/GetUserDtoResponse';
 import { ApiError } from '@exceptions/ApiError';
-import { SignInPayloadT, SignUpPayloadT } from '@interfaces/types';
 import { sessionService } from '@modules/session/session.service';
+
+import type { SignInPayloadT, SignUpPayloadT } from './types';
 
 class UserService {
 	constructor() {}
@@ -43,16 +44,10 @@ class UserService {
 
 		const user = await User.create({ email, password: hashedPassword });
 
-		const tokens = {
-			accessToken: sessionService.generateAccessToken({
-				id: user.id,
-				email: user.email,
-			}),
-			refreshToken: sessionService.generateRefreshToken({
-				id: user.id,
-				email: user.email,
-			}),
-		};
+		const tokens = sessionService.generateRefreshAndAccessTokens({
+			id: user.id,
+			email: user.email,
+		});
 
 		await sessionService.createSession({
 			userId: user.id,
@@ -69,7 +64,13 @@ class UserService {
 		};
 	}
 
-	async signIn({ email, password, fingerprint }: SignInPayloadT) {
+	async signIn({
+		email,
+		password,
+		fingerprint,
+		userAgent,
+		ip,
+	}: SignInPayloadT) {
 		const user = await User.findOne({ email: email });
 
 		if (!user) {
@@ -81,8 +82,23 @@ class UserService {
 		if (!isPasswordEqual) {
 			throw ApiError.BadRequest(`Bad credentials`);
 		}
+		const tokens = sessionService.generateRefreshAndAccessTokens({
+			id: user.id,
+			email: user.email,
+		});
 
-		return {};
+		const session = await sessionService.updateOrCreateSession(
+			{ userId: user._id, fingerprint },
+			{
+				userId: user._id,
+				refreshToken: tokens.refreshToken,
+				userAgent,
+				fingerprint,
+				ip,
+			}
+		);
+
+		return session;
 	}
 }
 
