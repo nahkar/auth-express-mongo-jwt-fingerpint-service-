@@ -28,11 +28,7 @@ const SessionSchema = new Schema({
 	expiresAt: {
 		type: Date,
 		required: true,
-		default: new Date(
-			new Date().setDate(
-				new Date().getDate() + Number(process.env.SESSION_EXPIRES_DAYS)
-			)
-		),
+		default: new Date(new Date().setDate(new Date().getDate() + Number(process.env.SESSION_EXPIRES_DAYS))),
 	},
 	createdAt: {
 		type: Date,
@@ -41,7 +37,7 @@ const SessionSchema = new Schema({
 });
 
 SessionSchema.pre('updateOne', function () {
-	this.set({ createdAt: new Date() }).catch(err => console.log(err));
+	void this.set({ createdAt: new Date() });
 });
 
 export const Session = model('Session', SessionSchema);

@@ -3,12 +3,8 @@ import dotenv from 'dotenv';
 
 import { Session } from '@models/Session.model';
 
-import type {
-	CreateSessionT,
-	SearchParamsUpdateOrCreateSessionT,
-	TokenPayloadT,
-	UpdateParamsUpdateOrCreateSessionT,
-} from './types';
+import type { CreateSessionT, SearchParamsUpdateOrCreateSessionT, TokenPayloadT, UpdateParamsUpdateOrCreateSessionT } from './types';
+import type { Types } from 'mongoose';
 
 dotenv.config();
 
@@ -48,7 +44,7 @@ class SessionService {
 		updateParams: UpdateParamsUpdateOrCreateSessionT,
 		upsert = true
 	) {
-		return await Session.updateOne(
+		const updated = await Session.updateOne(
 			{ userId: searchParams.userId, fingerprint: searchParams.fingerprint },
 			{
 				userId: updateParams.userId,
@@ -59,6 +55,24 @@ class SessionService {
 			},
 			{ upsert }
 		);
+
+		return updated;
+	}
+
+	async getCountOfSessions(userId: Types.ObjectId) {
+		const countOfSession = await Session.countDocuments({
+			userId,
+		});
+
+		return countOfSession;
+	}
+
+	async deleteManySessions(userId: Types.ObjectId) {
+		const deleted = await Session.deleteMany({
+			userId,
+		});
+
+		return deleted;
 	}
 }
 

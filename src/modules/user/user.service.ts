@@ -5,12 +5,11 @@ import { GetUserDtoResponse } from './dto/GetUserDtoResponse';
 import { ApiError } from '@exceptions/ApiError';
 import { sessionService } from '@modules/session/session.service';
 
-import type { SignInPayloadT, SignUpPayloadT } from './types';
-import { Session } from '@models/Session.model';
 import { MAX_COUNT_OF_SESSIONS, SALT_COUNT } from '@config/constants';
 
-class UserService {
+import type { SignInPayloadT, SignUpPayloadT } from './types';
 
+class UserService {
 	private hashPassword(password: string): string {
 		return hashSync(password, genSaltSync(Number(SALT_COUNT)));
 	}
@@ -28,13 +27,7 @@ class UserService {
 		}
 	}
 
-	async signUp({
-		email,
-		password,
-		fingerprint,
-		ip,
-		userAgent,
-	}: SignUpPayloadT) {
+	async signUp({ email, password, fingerprint, ip, userAgent }: SignUpPayloadT) {
 		const isUserExist = await User.findOne({ email: email });
 
 		if (isUserExist) {
@@ -65,13 +58,7 @@ class UserService {
 		};
 	}
 
-	async signIn({
-		email,
-		password,
-		fingerprint,
-		userAgent,
-		ip,
-	}: SignInPayloadT) {
+	async signIn({ email, password, fingerprint, userAgent, ip }: SignInPayloadT) {
 		const user = await User.findOne({ email: email });
 
 		if (!user) {
@@ -88,16 +75,11 @@ class UserService {
 			email: user.email,
 		});
 
-		// TODO: Check Model.countDocuments({ userId: user._id, fingerprint }) > 5 remove and create a new
-		const countOfSession = await Session.countDocuments({
-			userId: user._id,
-		});
+		const countOfSession = await sessionService.getCountOfSessions(user._id);
 
 		if (countOfSession > MAX_COUNT_OF_SESSIONS) {
-			// Todo: Remove all sessions
+			await sessionService.deleteManySessions(user._id);
 		}
-
-		console.log(countOfSession);
 
 		const session = await sessionService.updateOrCreateSession(
 			{ userId: user._id, fingerprint },
