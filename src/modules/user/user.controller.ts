@@ -53,13 +53,27 @@ class UserController {
 
 			const userAgent = req.headers['user-agent'];
 
-			const data = await userService.signIn({
+			const user = await userService.signIn({
 				...new SignInDtoRequest(req.body),
 				ip: req.ip,
 				userAgent,
 			});
 
-			res.status(httpStatus.CREATED).json(data);
+			setTokenCookie(res, user.refreshToken);
+
+			res.status(httpStatus.CREATED).json(new SignUpDtoResponse(user));
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	async refresh(req: Request, res: Response, next: NextFunction) {
+		try {
+			const { refreshToken } = req.cookies;
+			req.url;
+			console.log(123, refreshToken, req.url, req.baseUrl);
+
+			res.status(httpStatus.OK).json({});
 		} catch (error) {
 			next(error);
 		}

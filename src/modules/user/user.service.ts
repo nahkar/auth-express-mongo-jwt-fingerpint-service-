@@ -41,6 +41,7 @@ class UserService {
 		const tokens = sessionService.generateRefreshAndAccessTokens({
 			id: user.id as string,
 			email: user.email,
+			fingerprint
 		});
 
 		await sessionService.createSession({
@@ -73,6 +74,7 @@ class UserService {
 		const tokens = sessionService.generateRefreshAndAccessTokens({
 			id: user.id as string,
 			email: user.email,
+			fingerprint
 		});
 
 		const countOfSession = await sessionService.getCountOfSessions(user._id);
@@ -81,7 +83,7 @@ class UserService {
 			await sessionService.deleteManySessions(user._id);
 		}
 
-		const session = await sessionService.updateOrCreateSession(
+		await sessionService.updateOrCreateSession(
 			{ userId: user._id, fingerprint },
 			{
 				userId: user._id,
@@ -92,7 +94,15 @@ class UserService {
 			}
 		);
 
-		return session;
+		return {
+			...user.toObject(),
+			accessToken: tokens.accessToken,
+			refreshToken: tokens.refreshToken,
+		};
+	}
+
+	async refresh(refreshToken: string) {
+		console.log(refreshToken);
 	}
 }
 

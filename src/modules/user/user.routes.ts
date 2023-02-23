@@ -25,4 +25,6 @@ router
 		userController.signIn
 	);
 
+router.route('/refresh').get(userController.refresh);
+
 export { router as userRouter };

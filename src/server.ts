@@ -1,5 +1,6 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import dotenv from 'dotenv';
 
 import { apiErrorMiddleware } from '@middlewares/error.middleware';
@@ -13,6 +14,12 @@ const PORT:number = Number(process.env.PORT ) || SERVER_PORT;
 
 const app = express();
 
+app.use(
+	cors({
+		credentials: true,
+		origin: process.env.CLIENT_URL,
+	})
+);
 app.use(express.json());
 app.use(cookieParser());
 

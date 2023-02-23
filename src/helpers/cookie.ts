@@ -1,5 +1,7 @@
-import { Response } from 'express';
+import { DAYS } from '@config/constants';
 import dotenv from 'dotenv';
+
+import type { Response } from 'express';
 
 dotenv.config();
 
@@ -8,6 +10,6 @@ export const setTokenCookie = (res: Response, token: string): void => {
 		httpOnly: true,
 		sameSite: 'none',
 		secure: true,
-		maxAge: Number(process.env.SESSION_EXPIRES_DAYS) * 24 * 60 * 60 * 1000,
+		maxAge: Number(process.env.SESSION_EXPIRES_DAYS) * DAYS,
 	});
 };
