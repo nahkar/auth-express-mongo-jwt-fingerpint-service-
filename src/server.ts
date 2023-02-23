@@ -7,6 +7,7 @@ import { apiErrorMiddleware } from '@middlewares/error.middleware';
 import { connectToDatabase } from '@helpers/db';
 import { router } from '@routes/v1';
 import { SERVER_PORT } from '@config/constants';
+import { initAWS } from '@helpers/aws';
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ const main = () => {
 		PORT,
 		void (async () => {
 			try {
+				initAWS()
 				await connectToDatabase();
 			} catch (error) {
 				console.log(error);
