@@ -10,3 +10,9 @@ export interface ISession {
 	expiresAt: string;
 	createdAt: string;
 }
+
+export interface JwtDataPayload {
+	_id: string;
+	email: string;
+	fingerprint: string;
+}

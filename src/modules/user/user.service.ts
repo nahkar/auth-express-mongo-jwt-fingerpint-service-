@@ -1,5 +1,7 @@
 import { compare, genSaltSync, hashSync } from 'bcrypt';
 
+import { Types } from 'mongoose';
+
 import { User } from '@models/User.model';
 import { GetUserDtoResponse } from './dto/GetUserDtoResponse';
 import { ApiError } from '@exceptions/ApiError';
@@ -7,7 +9,8 @@ import { sessionService } from '@modules/session/session.service';
 
 import { MAX_COUNT_OF_SESSIONS, SALT_COUNT } from '@config/constants';
 
-import type { SignInPayloadT, SignUpPayloadT } from './types';
+import type { RefreshPayloadT, SignInPayloadT, SignUpPayloadT } from './types';
+import type { UserWithSessionsdT } from '@interfaces/types';
 
 class UserService {
 	private hashPassword(password: string): string {
@@ -16,6 +19,33 @@ class UserService {
 
 	private async comparePassword(password1: string, password2: string) {
 		return await compare(password1, password2);
+	}
+
+	private async getUserCurrentSession(userId: string, fingerprint: string) {
+		const user = await User.aggregate<UserWithSessionsdT | null>([
+			{
+				$match: { _id: new Types.ObjectId(userId) },
+			},
+			{
+				$lookup: {
+					from: 'sessions',
+					localField: '_id',
+					foreignField: 'userId',
+					as: 'sessions',
+					pipeline: [
+						{
+							$match: {
+								$expr: {
+									$and: [{ $eq: ['$fingerprint', fingerprint] }],
+								},
+							},
+						},
+					],
+				},
+			},
+		]);
+
+		return user[0] ?? null;
 	}
 
 	async getUsers() {
@@ -39,9 +69,9 @@ class UserService {
 		const user = await User.create({ email, password: hashedPassword });
 
 		const tokens = sessionService.generateRefreshAndAccessTokens({
-			id: user.id as string,
+			id: user._id.toString(),
 			email: user.email,
-			fingerprint
+			fingerprint,
 		});
 
 		await sessionService.createSession({
@@ -72,9 +102,9 @@ class UserService {
 			throw ApiError.BadRequest('Bad credentials');
 		}
 		const tokens = sessionService.generateRefreshAndAccessTokens({
-			id: user.id as string,
+			id: user._id.toString(),
 			email: user.email,
-			fingerprint
+			fingerprint,
 		});
 
 		const countOfSession = await sessionService.getCountOfSessions(user._id);
@@ -101,8 +131,46 @@ class UserService {
 		};
 	}
 
-	async refresh(refreshToken: string) {
-		console.log(refreshToken);
+	async refresh({ refreshToken, ip, userAgent }: RefreshPayloadT) {
+		if (!refreshToken) {
+			throw ApiError.UnauthorizedError();
+		}
+
+		const payload = sessionService.validateRefreshToken(refreshToken);
+
+		if (!payload) {
+			throw ApiError.UnauthorizedError();
+		}
+
+		const { id: userId, fingerprint } = payload;
+
+		const user = await this.getUserCurrentSession(userId, fingerprint);
+
+		if (!user) {
+			throw ApiError.UnauthorizedError();
+		}
+
+		const tokens = sessionService.generateRefreshAndAccessTokens({
+			id: userId,
+			email: user.email,
+			fingerprint,
+		});
+
+		await sessionService.updateOrCreateSession(
+			{ userId: user._id, fingerprint },
+			{
+				userId: user._id,
+				refreshToken: tokens.refreshToken,
+				userAgent,
+				fingerprint,
+				ip,
+			}
+		);
+
+		return {
+			accessToken: tokens.accessToken,
+			refreshToken: tokens.refreshToken,
+		}
 	}
 }
 

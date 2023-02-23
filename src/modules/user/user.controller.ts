@@ -8,6 +8,8 @@ import { ApiError } from '@exceptions/ApiError';
 import { setTokenCookie } from '@helpers/cookie';
 import { SignUpDtoResponse } from './dto/SignUpDtoResponse';
 import { SignInDtoRequest } from './dto/SignInDtoRequest';
+import { SignInDtoResponse } from './dto/SignInDtoResponse';
+import { RefreshDtoResponse } from './dto/RefreshDtoResponse';
 
 class UserController {
 	async getUsers(req: Request, res: Response, next: NextFunction) {
@@ -61,7 +63,7 @@ class UserController {
 
 			setTokenCookie(res, user.refreshToken);
 
-			res.status(httpStatus.CREATED).json(new SignUpDtoResponse(user));
+			res.status(httpStatus.CREATED).json(new SignInDtoResponse(user));
 		} catch (error) {
 			next(error);
 		}
@@ -70,10 +72,13 @@ class UserController {
 	async refresh(req: Request, res: Response, next: NextFunction) {
 		try {
 			const { refreshToken } = req.cookies;
-			req.url;
-			console.log(123, refreshToken, req.url, req.baseUrl);
+			const userAgent = req.headers['user-agent'];
 
-			res.status(httpStatus.OK).json({});
+			const refreshResponse = await userService.refresh({refreshToken, userAgent, ip: req.ip});
+
+			setTokenCookie(res, refreshResponse.refreshToken);
+
+			res.status(httpStatus.OK).json(new RefreshDtoResponse(refreshResponse));
 		} catch (error) {
 			next(error);
 		}

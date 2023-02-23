@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 
 import { Session } from '@models/Session.model';
 
+import type { JwtPayload } from 'jsonwebtoken';
 import type { CreateSessionT, SearchParamsUpdateOrCreateSessionT, TokenPayloadT, UpdateParamsUpdateOrCreateSessionT } from './types';
 import type { Types } from 'mongoose';
 
@@ -29,7 +30,7 @@ class SessionService {
 
 	validateRefreshToken(token: string) {
 		try {
-			return jwt.verify(token, process.env.JWT_REFRESH_SECRET ?? '');
+			return jwt.verify(token, process.env.JWT_REFRESH_SECRET ?? '') as JwtPayload;
 		} catch (error) {
 			return null;
 		}
@@ -74,6 +75,7 @@ class SessionService {
 
 		return deleted;
 	}
+
 }
 
 export const sessionService = new SessionService();
