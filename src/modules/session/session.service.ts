@@ -76,6 +76,15 @@ class SessionService {
 		return deleted;
 	}
 
+	async deleteSession({fingerprint, refreshToken}: {fingerprint: string, refreshToken:string}) {
+		const deleted = await Session.deleteOne({
+			fingerprint,
+			refreshToken,
+		});
+
+		return deleted;
+	}
+
 }
 
 export const sessionService = new SessionService();

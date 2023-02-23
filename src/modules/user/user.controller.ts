@@ -74,11 +74,25 @@ class UserController {
 			const { refreshToken } = req.cookies;
 			const userAgent = req.headers['user-agent'];
 
-			const refreshResponse = await userService.refresh({refreshToken, userAgent, ip: req.ip});
+			const refreshResponse = await userService.refresh({ refreshToken, userAgent, ip: req.ip });
 
 			setTokenCookie(res, refreshResponse.refreshToken);
 
 			res.status(httpStatus.OK).json(new RefreshDtoResponse(refreshResponse));
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	async logout(req: Request, res: Response, next: NextFunction) {
+		try {
+			const { refreshToken } = req.cookies;
+
+			await userService.logout({ refreshToken });
+
+			res.clearCookie('refreshToken');
+
+			res.status(httpStatus.OK).json({ msg: 'You have been logged out successfully.' });
 		} catch (error) {
 			next(error);
 		}

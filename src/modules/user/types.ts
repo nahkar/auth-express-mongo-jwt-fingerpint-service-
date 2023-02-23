@@ -6,3 +6,5 @@ export type SignUpPayloadT = Pick<IUser, 'email' | 'password'> & Pick<ISession, 
 export type SignInPayloadT = Pick<IUser, 'email' | 'password'> & Pick<ISession, 'ip' | 'fingerprint' | 'userAgent'>;
 
 export type RefreshPayloadT = Pick<ISession, 'ip' | 'userAgent' | 'refreshToken'>;
+
+export type LogoutPayloadT = Pick<ISession, 'refreshToken'>;

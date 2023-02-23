@@ -9,7 +9,7 @@ import { sessionService } from '@modules/session/session.service';
 
 import { MAX_COUNT_OF_SESSIONS, SALT_COUNT } from '@config/constants';
 
-import type { RefreshPayloadT, SignInPayloadT, SignUpPayloadT } from './types';
+import type { LogoutPayloadT, RefreshPayloadT, SignInPayloadT, SignUpPayloadT } from './types';
 import type { UserWithSessionsdT } from '@interfaces/types';
 
 class UserService {
@@ -170,6 +170,26 @@ class UserService {
 		return {
 			accessToken: tokens.accessToken,
 			refreshToken: tokens.refreshToken,
+		};
+	}
+
+	async logout({ refreshToken }: LogoutPayloadT) {
+		if (!refreshToken) {
+			throw ApiError.UnauthorizedError();
+		}
+
+		const payload = sessionService.validateRefreshToken(refreshToken);
+
+		if (!payload) {
+			throw ApiError.UnauthorizedError();
+		}
+
+		const { fingerprint } = payload;
+
+		const deleted = await sessionService.deleteSession({ refreshToken, fingerprint });
+
+		if (!deleted.deletedCount) {
+			throw ApiError.BadRequest('You are not logged in');
 		}
 	}
 }
