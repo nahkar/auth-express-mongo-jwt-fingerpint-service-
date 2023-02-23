@@ -29,4 +29,6 @@ router.route('/refresh').get(userController.refresh);
 
 router.route('/logout').post(userController.logout);
 
+router.route('/logout-all').post(userController.logoutAll);
+
 export { router as userRouter };

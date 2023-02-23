@@ -192,6 +192,31 @@ class UserService {
 			throw ApiError.BadRequest('You are not logged in');
 		}
 	}
+
+	async logoutAll({ refreshToken }: LogoutPayloadT) {
+		if (!refreshToken) {
+			throw ApiError.UnauthorizedError();
+		}
+
+		const payload = sessionService.validateRefreshToken(refreshToken);
+
+		if (!payload) {
+			throw ApiError.UnauthorizedError();
+		}
+
+		const user = await User.findOne({ email: payload.email });
+
+		if (!user) {
+			throw ApiError.UnauthorizedError();
+		}
+
+		const deleted = await sessionService.deleteManySessions(user._id);
+
+		if (!deleted.deletedCount) {
+			throw ApiError.BadRequest('You are not logged in');
+		}
+
+	}
 }
 
 export const userService = new UserService();

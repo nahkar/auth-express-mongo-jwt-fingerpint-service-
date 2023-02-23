@@ -97,6 +97,20 @@ class UserController {
 			next(error);
 		}
 	}
+
+	async logoutAll(req: Request, res: Response, next: NextFunction) {
+		try {
+			const { refreshToken } = req.cookies;
+
+			await userService.logoutAll({ refreshToken });
+
+			res.clearCookie('refreshToken');
+
+			res.status(httpStatus.OK).json({ msg: 'You have been logged out from all accounts successfully.' });
+		} catch (error) {
+			next(error);
+		}
+	}
 }
 
 export const userController = new UserController();
