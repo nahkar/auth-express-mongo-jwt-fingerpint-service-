@@ -9,5 +9,6 @@ export interface IActivate {
 	_id: Types.ObjectId;
 	userId: Types.ObjectId;
 	isActivated: boolean;
-	activationCode: string;
+	code: string;
+	activatedAt: string;
 }

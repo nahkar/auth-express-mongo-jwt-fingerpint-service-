@@ -7,14 +7,17 @@ const AcivateSchema = new Schema({
 		type: Boolean,
 		default: false
 	},
-	activationCode: {
+	code: {
 		type: String,
 		required: true
 	},
 	userId: {
 		type: Schema.Types.ObjectId,
 		ref: 'User'
-	}
+	},
+	activatedAt: {
+		type: Date,
+	},
 });
 
 export const Activate = model<IActivate>('Activate', AcivateSchema )
