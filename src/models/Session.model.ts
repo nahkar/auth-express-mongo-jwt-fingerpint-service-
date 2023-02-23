@@ -1,7 +1,10 @@
 import { Schema, Types, model } from 'mongoose';
+import dotenv from 'dotenv';
+
 import { getSeesionExpiresDate } from '@helpers/time';
 
-import dotenv from 'dotenv';
+
+import type { ISession } from '@interfaces/session.interface';
 
 dotenv.config();
 
@@ -29,7 +32,6 @@ const SessionSchema = new Schema({
 	},
 	expiresAt: {
 		type: Date,
-		required: true,
 		default: getSeesionExpiresDate(),
 	},
 	createdAt: {
@@ -46,4 +48,4 @@ SessionSchema.pre('updateOne', function () {
 	void this.set({ expiresAt: getSeesionExpiresDate() });
 });
 
-export const Session = model('Session', SessionSchema);
+export const Session = model<ISession>('Session', SessionSchema);

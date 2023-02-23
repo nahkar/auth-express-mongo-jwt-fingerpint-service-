@@ -11,6 +11,8 @@ import { MAX_COUNT_OF_SESSIONS, SALT_COUNT } from '@config/constants';
 
 import type { LogoutPayloadT, RefreshPayloadT, SignInPayloadT, SignUpPayloadT } from './types';
 import type { UserWithSessionsdT } from '@interfaces/types';
+import { activateService } from '@modules/activate/activate.service';
+import { ActivationMethod } from '@interfaces/acivate.interface';
 
 class UserService {
 	private hashPassword(password: string): string {
@@ -67,6 +69,8 @@ class UserService {
 		const hashedPassword = this.hashPassword(password);
 
 		const user = await User.create({ email, password: hashedPassword });
+
+		await activateService.sendActivationCode({user, type: ActivationMethod.Email});
 
 		const tokens = sessionService.generateRefreshAndAccessTokens({
 			id: user._id.toString(),
@@ -194,6 +198,7 @@ class UserService {
 	}
 
 	async logoutAll({ refreshToken }: LogoutPayloadT) {
+
 		if (!refreshToken) {
 			throw ApiError.UnauthorizedError();
 		}
