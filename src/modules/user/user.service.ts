@@ -59,18 +59,18 @@ class UserService {
 		}
 	}
 
-	async signUp({ email, password, fingerprint, ip, userAgent }: SignUpPayloadT) {
+	async signUp({ email, password, fingerprint, ip, userAgent, phone }: SignUpPayloadT) {
 		const isUserExist = await User.findOne({ email: email });
 
 		if (isUserExist) {
-			throw ApiError.BadRequest(`User with email: ${email} already exists`);
+			throw ApiError.BadRequest('User with this email is already exists');
 		}
 
 		const hashedPassword = this.hashPassword(password);
 
-		const user = await User.create({ email, password: hashedPassword });
+		const user = await User.create({ email, phone, password: hashedPassword });
 
-		await activateService.sendActivationCode({user, type: ActivationMethod.Email});
+		await activateService.sendActivationCode({ user, type: ActivationMethod.SMS });
 
 		const tokens = sessionService.generateRefreshAndAccessTokens({
 			id: user._id.toString(),
@@ -172,6 +172,7 @@ class UserService {
 		);
 
 		return {
+			...user,
 			accessToken: tokens.accessToken,
 			refreshToken: tokens.refreshToken,
 		};
@@ -198,7 +199,6 @@ class UserService {
 	}
 
 	async logoutAll({ refreshToken }: LogoutPayloadT) {
-
 		if (!refreshToken) {
 			throw ApiError.UnauthorizedError();
 		}
@@ -220,7 +220,6 @@ class UserService {
 		if (!deleted.deletedCount) {
 			throw ApiError.BadRequest('You are not logged in');
 		}
-
 	}
 }
 

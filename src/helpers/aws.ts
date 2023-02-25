@@ -23,6 +23,7 @@ export const sendActivationCodeBySMS = async ({ code, phone }: { code: string; p
 				PhoneNumber: phone,
 			})
 			.promise();
+
 		return result;
 	} catch (err) {
 		console.error(err);
