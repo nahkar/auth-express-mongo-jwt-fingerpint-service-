@@ -1,6 +1,8 @@
-import type { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
+
 import { activateService } from './activate.service';
+
+import type { NextFunction, Request, Response } from 'express';
 
 class ActivateController {
 	async activate(req: Request, res: Response, next: NextFunction) {

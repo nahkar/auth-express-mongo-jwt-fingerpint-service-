@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-
 import { Session } from '@models/Session.model';
 
 import type { JwtPayload } from 'jsonwebtoken';
@@ -76,7 +75,7 @@ class SessionService {
 		return deleted;
 	}
 
-	async deleteSession({fingerprint, refreshToken}: {fingerprint: string, refreshToken:string}) {
+	async deleteSession({ fingerprint, refreshToken }: {fingerprint: string, refreshToken:string}) {
 		const deleted = await Session.deleteOne({
 			fingerprint,
 			refreshToken,

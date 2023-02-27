@@ -17,7 +17,7 @@ const getTransport = () => {
 
 export const sendActivationCodeByEmail = async (to: string, code: string) => {
 	const transport = getTransport();
-	const link = `${process.env.API_URL ?? ''}/api/v1/activate/${code}`
+	const link = `${process.env.API_URL ?? ''}/api/v1/activate/${code}`;
 
 	await transport.sendMail({
 		to,

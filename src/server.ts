@@ -2,7 +2,6 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
-
 import { apiErrorMiddleware } from '@middlewares/error.middleware';
 import { connectToDatabase } from '@helpers/db';
 import { router } from '@routes/v1';
@@ -37,7 +36,7 @@ const main = () => {
 		PORT,
 		void (async () => {
 			try {
-				initAWS()
+				initAWS();
 				await connectToDatabase();
 			} catch (error) {
 				console.log(error);

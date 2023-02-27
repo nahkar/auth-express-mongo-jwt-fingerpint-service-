@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import { activateController } from './activate.controller';
 
 export const router = Router();

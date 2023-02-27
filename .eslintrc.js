@@ -15,7 +15,8 @@ module.exports = {
     sourceType: "module",
   },
   plugins: [
-    "@typescript-eslint"
+		"@typescript-eslint",
+    "import"
   ],
   rules: {
     "@typescript-eslint/indent": ["error", "tab", { "SwitchCase": 1 }],
@@ -27,5 +28,27 @@ module.exports = {
     '@typescript-eslint/no-misused-promises': 'off',
     '@typescript-eslint/unbound-method': 'off',
     '@typescript-eslint/no-unsafe-assignment': 'off',
+		'no-trailing-spaces': ['error', { ignoreComments: true }],
+    '@typescript-eslint/consistent-type-imports': 'error',
+    'no-multiple-empty-lines': ['error', { max: 1 }],
+    quotes: ['error', 'single'],
+    "import/order": [
+      "error",
+      {
+        groups: [
+          "external",
+          "internal",
+          "index",
+          "sibling",
+          "parent",
+          "builtin",
+          "object",
+          "type"
+        ],
+        "newlines-between": "always"
+      }
+    ],
+    'object-curly-spacing': ["error", "always"],
+    semi: ["error", "always"],
   },
 };

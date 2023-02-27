@@ -1,20 +1,19 @@
 import { compare, genSaltSync, hashSync } from 'bcrypt';
-
-import { Types } from 'mongoose';
-
-import { User } from '@models/User.model';
-import { GetUserDtoResponse } from './dto/GetUserDtoResponse';
 import { ApiError } from '@exceptions/ApiError';
 import { sessionService } from '@modules/session/session.service';
-
 import { MAX_COUNT_OF_SESSIONS, SALT_COUNT } from '@config/constants';
-
-import type { LogoutPayloadT, RefreshPayloadT, SignInPayloadT, SignUpPayloadT } from './types';
-import type { UserWithSessionsdT } from '@interfaces/types';
 import { activateService } from '@modules/activate/activate.service';
 import { ActivationMethod } from '@interfaces/acivate.interface';
 
+import { GetUserDtoResponse } from './dto/GetUserDtoResponse';
+
+import { UserRepository } from '../../reposities/user.repositiry';
+
+import type { LogoutPayloadT, RefreshPayloadT, SignInPayloadT, SignUpPayloadT } from './types';
+
 class UserService {
+	constructor(private userRepository = new UserRepository()) {}
+
 	private hashPassword(password: string): string {
 		return hashSync(password, genSaltSync(Number(SALT_COUNT)));
 	}
@@ -23,36 +22,9 @@ class UserService {
 		return await compare(password1, password2);
 	}
 
-	private async getUserCurrentSession(userId: string, fingerprint: string) {
-		const user = await User.aggregate<UserWithSessionsdT | null>([
-			{
-				$match: { _id: new Types.ObjectId(userId) },
-			},
-			{
-				$lookup: {
-					from: 'sessions',
-					localField: '_id',
-					foreignField: 'userId',
-					as: 'sessions',
-					pipeline: [
-						{
-							$match: {
-								$expr: {
-									$and: [{ $eq: ['$fingerprint', fingerprint] }],
-								},
-							},
-						},
-					],
-				},
-			},
-		]);
-
-		return user[0] ?? null;
-	}
-
 	async getUsers() {
 		try {
-			const users = await User.find();
+			const users = await this.userRepository.getUsers();
 			return users.map((user) => new GetUserDtoResponse(user.toObject()));
 		} catch (error) {
 			console.log(error);
@@ -60,7 +32,7 @@ class UserService {
 	}
 
 	async signUp({ email, password, fingerprint, ip, userAgent, phone }: SignUpPayloadT) {
-		const isUserExist = await User.findOne({ email: email });
+		const isUserExist = await this.userRepository.getUserByEmail(email);
 
 		if (isUserExist) {
 			throw ApiError.BadRequest('User with this email is already exists');
@@ -68,9 +40,9 @@ class UserService {
 
 		const hashedPassword = this.hashPassword(password);
 
-		const user = await User.create({ email, phone, password: hashedPassword });
+		const user = await this.userRepository.createUser({ email, phone, hashedPassword });
 
-		await activateService.sendActivationCode({ user, type: ActivationMethod.SMS });
+		const activated = await activateService.sendActivationCode({ user, type: ActivationMethod.Email });
 
 		const tokens = sessionService.generateRefreshAndAccessTokens({
 			id: user._id.toString(),
@@ -90,11 +62,12 @@ class UserService {
 			...user.toObject(),
 			accessToken: tokens.accessToken,
 			refreshToken: tokens.refreshToken,
+			isActivated: activated.isActivated,
 		};
 	}
 
 	async signIn({ email, password, fingerprint, userAgent, ip }: SignInPayloadT) {
-		const user = await User.findOne({ email: email });
+		const user = await this.userRepository.getUserByEmail(email);
 
 		if (!user) {
 			throw ApiError.BadRequest('Bad credentials');
@@ -129,7 +102,7 @@ class UserService {
 		);
 
 		return {
-			...user.toObject(),
+			...user,
 			accessToken: tokens.accessToken,
 			refreshToken: tokens.refreshToken,
 		};
@@ -148,7 +121,7 @@ class UserService {
 
 		const { id: userId, fingerprint } = payload;
 
-		const user = await this.getUserCurrentSession(userId, fingerprint);
+		const user = await this.userRepository.getUserCurrentSession({ userId, fingerprint });
 
 		if (!user) {
 			throw ApiError.UnauthorizedError();
@@ -170,7 +143,7 @@ class UserService {
 				ip,
 			}
 		);
-
+		// TODO: add isActivate
 		return {
 			...user,
 			accessToken: tokens.accessToken,
@@ -209,7 +182,7 @@ class UserService {
 			throw ApiError.UnauthorizedError();
 		}
 
-		const user = await User.findOne({ email: payload.email });
+		const user = await this.userRepository.getUserByEmail( payload.email );
 
 		if (!user) {
 			throw ApiError.UnauthorizedError();

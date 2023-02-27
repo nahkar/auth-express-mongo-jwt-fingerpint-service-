@@ -1,15 +1,16 @@
-import type { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
-
-import { userService } from './user.service';
 import { validationResult } from 'express-validator';
-import { SignUpDtoRequest } from './dto/SignUpDtoRequest';
 import { ApiError } from '@exceptions/ApiError';
 import { setTokenCookie } from '@helpers/cookie';
+
+import { SignUpDtoRequest } from './dto/SignUpDtoRequest';
+import { userService } from './user.service';
 import { SignUpDtoResponse } from './dto/SignUpDtoResponse';
 import { SignInDtoRequest } from './dto/SignInDtoRequest';
 import { SignInDtoResponse } from './dto/SignInDtoResponse';
 import { RefreshDtoResponse } from './dto/RefreshDtoResponse';
+
+import type { NextFunction, Request, Response } from 'express';
 
 class UserController {
 	async getUsers(req: Request, res: Response, next: NextFunction) {

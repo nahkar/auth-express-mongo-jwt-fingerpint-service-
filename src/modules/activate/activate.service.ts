@@ -1,12 +1,11 @@
 import { sendActivationCodeByEmail } from '@helpers/mailer';
 import { v4 as uuidv4 } from 'uuid';
-
 import { ActivationMethod } from '@interfaces/acivate.interface';
-
-import type { IUser } from '@interfaces/user.interface';
 import { Activate } from '@models/Activate.model';
 import { ApiError } from '@exceptions/ApiError';
 import { sendActivationCodeBySMS } from '@helpers/aws';
+
+import type { IUser } from '@interfaces/user.interface';
 
 class ActivateService {
 	private generateActivationEmailCode() {
@@ -19,18 +18,18 @@ class ActivateService {
 	}
 
 	async sendActivationCode({ user, type }: { user: IUser; type: ActivationMethod }) {
+		let activated;
 
-		if (type === ActivationMethod.Email) {
+		if (type === ActivationMethod.SMS && user.phone) {
+			const code = this.generateActivationSMSCode();
+			activated = await Activate.create({ code, userId: user._id.toString() });
+			await sendActivationCodeBySMS({ code, phone: user.phone });
+		} else {
 			const code = this.generateActivationEmailCode();
 			await sendActivationCodeByEmail(user.email, code);
-			await Activate.create({ code, user: user });
+			activated = await Activate.create({ code, userId: user._id.toString() });
 		}
-
-		if(type === ActivationMethod.SMS && user.phone){
-			const code = this.generateActivationSMSCode();
-			await Activate.create({ code, user: user });
-			await sendActivationCodeBySMS({code, phone: user.phone})
-		}
+		return activated;
 	}
 
 	async activate(code: string) {

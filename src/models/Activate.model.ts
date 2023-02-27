@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, Types, model } from 'mongoose';
 
 import type{ IActivate } from '@interfaces/acivate.interface';
 
@@ -12,12 +12,13 @@ const AcivateSchema = new Schema({
 		required: true
 	},
 	userId: {
-		type: Schema.Types.ObjectId,
-		ref: 'User'
+		type: Types.ObjectId,
+		ref: 'User',
+		require: true
 	},
 	activatedAt: {
 		type: Date,
 	},
 });
 
-export const Activate = model<IActivate>('Activate', AcivateSchema )
+export const Activate = model<IActivate>('Activate', AcivateSchema );
