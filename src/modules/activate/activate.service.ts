@@ -1,13 +1,17 @@
 import { sendActivationCodeByEmail } from '@helpers/mailer';
 import { v4 as uuidv4 } from 'uuid';
 import { ActivationMethod } from '@interfaces/acivate.interface';
-import { Activate } from '@models/Activate.model';
+// import { Activate } from '@models/Activate.model';
 import { ApiError } from '@exceptions/ApiError';
 import { sendActivationCodeBySMS } from '@helpers/aws';
+
+import { ActivateRepository } from './activate.repositiry';
 
 import type { IUser } from '@interfaces/user.interface';
 
 class ActivateService {
+	constructor(private activateRepository = new ActivateRepository()) {}
+
 	private generateActivationEmailCode() {
 		return uuidv4();
 	}
@@ -22,18 +26,19 @@ class ActivateService {
 
 		if (type === ActivationMethod.SMS && user.phone) {
 			const code = this.generateActivationSMSCode();
-			activated = await Activate.create({ code, userId: user._id.toString() });
+
+			activated = await this.activateRepository.create({ code, userId: user._id });
 			await sendActivationCodeBySMS({ code, phone: user.phone });
 		} else {
 			const code = this.generateActivationEmailCode();
 			await sendActivationCodeByEmail(user.email, code);
-			activated = await Activate.create({ code, userId: user._id.toString() });
+			activated = await this.activateRepository.create({ code, userId: user._id });
 		}
 		return activated;
 	}
 
 	async activate(code: string) {
-		const activate = await Activate.findOne({ code });
+		const activate = await this.activateRepository.findOne({ code });
 
 		if (!activate) {
 			throw ApiError.BadRequest(`Bad confirm code: ${code}`);
@@ -43,7 +48,7 @@ class ActivateService {
 			throw ApiError.BadRequest(`${code} is already activated`);
 		}
 
-		await Activate.findOneAndUpdate({ code }, { isActivated: true, activatedAt: new Date() });
+		await this.activateRepository.findOneAndUpdate({ code }, { isActivated: true });
 	}
 }
 

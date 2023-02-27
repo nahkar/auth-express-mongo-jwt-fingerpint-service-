@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import { Session } from '@models/Session.model';
+import { SessionRepository } from '@modules/session/session.repository';
 
 import type { JwtPayload } from 'jsonwebtoken';
 import type { CreateSessionT, SearchParamsUpdateOrCreateSessionT, TokenPayloadT, UpdateParamsUpdateOrCreateSessionT } from './types';
@@ -9,6 +9,7 @@ import type { Types } from 'mongoose';
 dotenv.config();
 
 class SessionService {
+	constructor(private sessionRepository = new SessionRepository()) {}
 	generateAccessToken(payload: TokenPayloadT) {
 		return jwt.sign(payload, process.env.JWT_ACCESS_SECRET ?? '', {
 			expiresIn: '30s',
@@ -36,7 +37,7 @@ class SessionService {
 	}
 
 	async createSession(data: CreateSessionT) {
-		await Session.create(data);
+		await this.sessionRepository.create(data);
 	}
 
 	async updateOrCreateSession(
@@ -44,39 +45,31 @@ class SessionService {
 		updateParams: UpdateParamsUpdateOrCreateSessionT,
 		upsert = true
 	) {
-		const updated = await Session.updateOne(
-			{ userId: searchParams.userId, fingerprint: searchParams.fingerprint },
-			{
-				userId: updateParams.userId,
-				refreshToken: updateParams.refreshToken,
-				userAgent: updateParams.userAgent,
-				fingerprint: updateParams.fingerprint,
-				ip: updateParams.ip,
-			},
-			{ upsert }
-		);
+		const updated = await this.sessionRepository.updateOne({ userId: searchParams.userId, fingerprint: searchParams.fingerprint }, {
+			userId: updateParams.userId,
+			refreshToken: updateParams.refreshToken,
+			userAgent: updateParams.userAgent,
+			fingerprint: updateParams.fingerprint,
+			ip: updateParams.ip,
+		}, { upsert });
 
 		return updated;
 	}
 
 	async getCountOfSessions(userId: Types.ObjectId) {
-		const countOfSession = await Session.countDocuments({
-			userId,
-		});
+		const countOfSession = await this.sessionRepository.countDocuments(userId);
 
 		return countOfSession;
 	}
 
 	async deleteManySessions(userId: Types.ObjectId) {
-		const deleted = await Session.deleteMany({
-			userId,
-		});
+		const deleted = await this.sessionRepository.deleteMany(userId);
 
 		return deleted;
 	}
 
 	async deleteSession({ fingerprint, refreshToken }: {fingerprint: string, refreshToken:string}) {
-		const deleted = await Session.deleteOne({
+		const deleted = await this.sessionRepository.deleteOne({
 			fingerprint,
 			refreshToken,
 		});

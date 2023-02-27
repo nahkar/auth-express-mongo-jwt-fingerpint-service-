@@ -4,10 +4,9 @@ import { sessionService } from '@modules/session/session.service';
 import { MAX_COUNT_OF_SESSIONS, SALT_COUNT } from '@config/constants';
 import { activateService } from '@modules/activate/activate.service';
 import { ActivationMethod } from '@interfaces/acivate.interface';
+import { UserRepository } from '@modules/user/user.repositiry';
 
 import { GetUserDtoResponse } from './dto/GetUserDtoResponse';
-
-import { UserRepository } from '../../reposities/user.repositiry';
 
 import type { LogoutPayloadT, RefreshPayloadT, SignInPayloadT, SignUpPayloadT } from './types';
 
@@ -24,7 +23,7 @@ class UserService {
 
 	async getUsers() {
 		try {
-			const users = await this.userRepository.getUsers();
+			const users = await this.userRepository.find();
 			return users.map((user) => new GetUserDtoResponse(user.toObject()));
 		} catch (error) {
 			console.log(error);
@@ -32,7 +31,7 @@ class UserService {
 	}
 
 	async signUp({ email, password, fingerprint, ip, userAgent, phone }: SignUpPayloadT) {
-		const isUserExist = await this.userRepository.getUserByEmail(email);
+		const isUserExist = await this.userRepository.findOne({ email });
 
 		if (isUserExist) {
 			throw ApiError.BadRequest('User with this email is already exists');
@@ -40,7 +39,7 @@ class UserService {
 
 		const hashedPassword = this.hashPassword(password);
 
-		const user = await this.userRepository.createUser({ email, phone, hashedPassword });
+		const user = await this.userRepository.create({ email, phone, password: hashedPassword });
 
 		const activated = await activateService.sendActivationCode({ user, type: ActivationMethod.Email });
 
@@ -67,7 +66,7 @@ class UserService {
 	}
 
 	async signIn({ email, password, fingerprint, userAgent, ip }: SignInPayloadT) {
-		const user = await this.userRepository.getUserByEmail(email);
+		const user = await this.userRepository.findOne({ email });
 
 		if (!user) {
 			throw ApiError.BadRequest('Bad credentials');
@@ -121,7 +120,7 @@ class UserService {
 
 		const { id: userId, fingerprint } = payload;
 
-		const user = await this.userRepository.getUserCurrentSession({ userId, fingerprint });
+		const user = await this.userRepository.findByIdUserWithSessions({ userId, fingerprint });
 
 		if (!user) {
 			throw ApiError.UnauthorizedError();
@@ -182,7 +181,7 @@ class UserService {
 			throw ApiError.UnauthorizedError();
 		}
 
-		const user = await this.userRepository.getUserByEmail( payload.email );
+		const user = await this.userRepository.findOne({ email: payload.email });
 
 		if (!user) {
 			throw ApiError.UnauthorizedError();

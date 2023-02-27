@@ -1,20 +1,44 @@
 import { User } from '@models/User.model';
 import { Types } from 'mongoose';
 
+import type { IUser } from '@interfaces/user.interface';
 import type { UserWithSessionsdT } from '@interfaces/types';
 
 export class UserRepository {
 	constructor(private UserModel: typeof User = User) {}
 
-	async getUsers() {
+	async find() {
 		const users = await this.UserModel.find();
 		return users;
 	}
 
-	async getUserCurrentSession({ userId, fingerprint }: { userId: string; fingerprint: string }) {
-		const [user] = await User.aggregate<UserWithSessionsdT | null>([
+	async findByIdUserWithSessions({ userId, fingerprint }: { userId: string; fingerprint: string }) {
+		const [user] = await this.UserModel.aggregate<UserWithSessionsdT | null>([
 			{
 				$match: { _id: new Types.ObjectId(userId) },
+			},
+			{
+				$lookup: {
+					from: 'activates',
+					localField: '_id',
+					foreignField: 'userId',
+					as: 'result',
+				},
+			},
+			{
+				$unwind: {
+					path: '$result',
+				},
+			},
+			{
+				$set: {
+					isActivated: '$result.isActivated',
+				},
+			},
+			{
+				$project: {
+					result: 0,
+				},
 			},
 			{
 				$lookup: {
@@ -31,23 +55,23 @@ export class UserRepository {
 							},
 						},
 					],
-				},
+				}
 			},
 		]);
 
 		return user;
 	}
 
-	async createUser({ email, phone, hashedPassword }: { email: string; phone?: string; hashedPassword: string }) {
-		const user = await User.create({ email, phone, password: hashedPassword });
+	async create(createParams: Partial<IUser>) {
+		const user = await this.UserModel.create({ ...createParams });
 		return user;
 	}
 
-	async getUserByEmail(email: string) {
-		const [user] = await User.aggregate<UserWithSessionsdT | null>([
+	async findOne(findParams: Partial<IUser>) {
+		const [user] = await this.UserModel.aggregate<UserWithSessionsdT | null>([
 			{
 				$match: {
-					email,
+					...findParams
 				},
 			},
 			{
