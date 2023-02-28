@@ -9,7 +9,7 @@ import { ActivateRepository } from './activate.repositiry';
 
 import type { IUser } from '@interfaces/user.interface';
 
-class ActivateService {
+export class ActivateService {
 	constructor(private activateRepository = new ActivateRepository()) {}
 
 	private generateActivationEmailCode() {
@@ -52,4 +52,3 @@ class ActivateService {
 	}
 }
 
-export const activateService = new ActivateService();

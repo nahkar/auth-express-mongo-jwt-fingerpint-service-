@@ -3,7 +3,7 @@ import { Activate } from '@models/Activate.model';
 import type { IActivate } from '@interfaces/acivate.interface';
 
 export class ActivateRepository {
-	constructor(private ActivateModel: typeof Activate = Activate) {}
+	constructor(private ActivateModel = Activate) {}
 
 	async create(createParams: Partial<IActivate>) {
 		const activated = await this.ActivateModel.create({ ...createParams });

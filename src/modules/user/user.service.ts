@@ -2,7 +2,7 @@ import { compare, genSaltSync, hashSync } from 'bcrypt';
 import { ApiError } from '@exceptions/ApiError';
 import { sessionService } from '@modules/session/session.service';
 import { MAX_COUNT_OF_SESSIONS, SALT_COUNT } from '@config/constants';
-import { activateService } from '@modules/activate/activate.service';
+import { ActivateService } from '@modules/activate/activate.service';
 import { ActivationMethod } from '@interfaces/acivate.interface';
 import { UserRepository } from '@modules/user/user.repositiry';
 
@@ -10,8 +10,8 @@ import { GetUserDtoResponse } from './dto/GetUserDtoResponse';
 
 import type { LogoutPayloadT, RefreshPayloadT, SignInPayloadT, SignUpPayloadT } from './types';
 
-class UserService {
-	constructor(private userRepository = new UserRepository()) {}
+export class UserService {
+	constructor(private userRepository = new UserRepository(), private activateService = new ActivateService()) {}
 
 	private hashPassword(password: string): string {
 		return hashSync(password, genSaltSync(Number(SALT_COUNT)));
@@ -41,7 +41,7 @@ class UserService {
 
 		const user = await this.userRepository.create({ email, phone, password: hashedPassword });
 
-		const activated = await activateService.sendActivationCode({ user, type: ActivationMethod.Email });
+		const activated = await this.activateService.sendActivationCode({ user, type: ActivationMethod.Email });
 
 		const tokens = sessionService.generateRefreshAndAccessTokens({
 			id: user._id.toString(),
@@ -142,7 +142,7 @@ class UserService {
 				ip,
 			}
 		);
-		// TODO: add isActivate
+
 		return {
 			...user,
 			accessToken: tokens.accessToken,
@@ -194,5 +194,3 @@ class UserService {
 		}
 	}
 }
-
-export const userService = new UserService();
