@@ -5,13 +5,14 @@ import { MAX_COUNT_OF_SESSIONS, SALT_COUNT } from '@config/constants';
 import { ActivateService } from '@modules/activate/activate.service';
 import { ActivationMethod } from '@interfaces/acivate.interface';
 import { UserRepository } from '@modules/user/user.repositiry';
+import { ProfileService } from '@modules/profile/profile.service';
 
 import { GetUserDtoResponse } from './dto/GetUserDtoResponse';
 
 import type { LogoutPayloadT, RefreshPayloadT, SignInPayloadT, SignUpPayloadT } from './types';
 
 export class UserService {
-	constructor(private userRepository = new UserRepository(), private activateService = new ActivateService()) {}
+	constructor(private userRepository = new UserRepository(), private activateService = new ActivateService(), private profileService = new ProfileService()) {}
 
 	private hashPassword(password: string): string {
 		return hashSync(password, genSaltSync(Number(SALT_COUNT)));
@@ -56,6 +57,8 @@ export class UserService {
 			fingerprint,
 			ip,
 		});
+
+		await this.profileService.updateProfile(user._id.toString(), { ...user.toObject(), userId: user._id.toString() });
 
 		return {
 			...user.toObject(),

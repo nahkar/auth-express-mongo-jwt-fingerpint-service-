@@ -14,3 +14,5 @@ export interface IProfile {
 	timezone: string;
 	currency: string;
 }
+
+export type UpdateOrCreateProfileParamsT = Omit<Partial<IProfile>, '_id' | 'userId'> & {userId: string}
