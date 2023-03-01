@@ -65,7 +65,7 @@ export class UserController {
 
 			setTokenCookie(res, user.refreshToken);
 
-			res.status(httpStatus.CREATED).json(new SignInDtoResponse(user));
+			res.status(httpStatus.OK).json(new SignInDtoResponse(user));
 		} catch (error) {
 			next(error);
 		}

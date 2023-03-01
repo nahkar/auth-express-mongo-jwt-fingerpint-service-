@@ -72,13 +72,13 @@ export class UserService {
 		const user = await this.userRepository.findOne({ email });
 
 		if (!user) {
-			throw ApiError.BadRequest('Bad credentials');
+			throw ApiError.UnauthorizedError();
 		}
 
 		const isPasswordEqual = await this.comparePassword(password, user.password);
 
 		if (!isPasswordEqual) {
-			throw ApiError.BadRequest('Bad credentials');
+			throw ApiError.UnauthorizedError();
 		}
 		const tokens = sessionService.generateRefreshAndAccessTokens({
 			id: user._id.toString(),
