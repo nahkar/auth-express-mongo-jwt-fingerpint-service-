@@ -4,7 +4,7 @@ import { ApiError } from '@exceptions/ApiError';
 import { setTokenCookie } from '@helpers/cookie';
 
 import { SignUpDtoRequest } from './dto/SignUpDtoRequest';
-import { userService } from './user.service';
+import { UserService } from './user.service';
 import { SignUpDtoResponse } from './dto/SignUpDtoResponse';
 import { SignInDtoRequest } from './dto/SignInDtoRequest';
 import { SignInDtoResponse } from './dto/SignInDtoResponse';
@@ -12,10 +12,11 @@ import { RefreshDtoResponse } from './dto/RefreshDtoResponse';
 
 import type { NextFunction, Request, Response } from 'express';
 
-class UserController {
+export class UserController {
+	constructor(private userService = new UserService()){}
 	async getUsers(req: Request, res: Response, next: NextFunction) {
 		try {
-			const users = await userService.getUsers();
+			const users = await this.userService.getUsers();
 			res.json(users);
 		} catch (error) {
 			next(error);
@@ -32,7 +33,7 @@ class UserController {
 
 			const userAgent = req.headers['user-agent'];
 
-			const user = await userService.signUp({
+			const user = await this.userService.signUp({
 				...new SignUpDtoRequest(req.body),
 				ip: req.ip,
 				userAgent,
@@ -56,7 +57,7 @@ class UserController {
 
 			const userAgent = req.headers['user-agent'];
 
-			const user = await userService.signIn({
+			const user = await this.userService.signIn({
 				...new SignInDtoRequest(req.body),
 				ip: req.ip,
 				userAgent,
@@ -64,7 +65,7 @@ class UserController {
 
 			setTokenCookie(res, user.refreshToken);
 
-			res.status(httpStatus.CREATED).json(new SignInDtoResponse(user));
+			res.status(httpStatus.OK).json(new SignInDtoResponse(user));
 		} catch (error) {
 			next(error);
 		}
@@ -75,7 +76,7 @@ class UserController {
 			const { refreshToken } = req.cookies;
 			const userAgent = req.headers['user-agent'];
 
-			const refreshResponse = await userService.refresh({ refreshToken, userAgent, ip: req.ip });
+			const refreshResponse = await this.userService.refresh({ refreshToken, userAgent, ip: req.ip });
 
 			setTokenCookie(res, refreshResponse.refreshToken);
 
@@ -89,7 +90,7 @@ class UserController {
 		try {
 			const { refreshToken } = req.cookies;
 
-			await userService.logout({ refreshToken });
+			await this.userService.logout({ refreshToken });
 
 			res.clearCookie('refreshToken');
 
@@ -103,7 +104,7 @@ class UserController {
 		try {
 			const { refreshToken } = req.cookies;
 
-			await userService.logoutAll({ refreshToken });
+			await this.userService.logoutAll({ refreshToken });
 
 			res.clearCookie('refreshToken');
 
@@ -113,5 +114,3 @@ class UserController {
 		}
 	}
 }
-
-export const userController = new UserController();
