@@ -1,7 +1,7 @@
 import httpStatus from 'http-status';
 import { validationResult } from 'express-validator';
 import { ApiError } from '@exceptions/ApiError';
-import { setTokenCookie } from '@helpers/cookie';
+import { removeTokenCookie, setTokenCookie } from '@helpers/cookie';
 
 import { SignUpDtoRequest } from './dto/SignUpDtoRequest';
 import { UserService } from './user.service';
@@ -92,7 +92,7 @@ export class UserController {
 
 			await this.userService.logout({ refreshToken });
 
-			res.clearCookie('refreshToken');
+			removeTokenCookie(res);
 
 			res.status(httpStatus.OK).json({ msg: 'You have been logged out successfully.' });
 		} catch (error) {
@@ -106,7 +106,7 @@ export class UserController {
 
 			await this.userService.logoutAll({ refreshToken });
 
-			res.clearCookie('refreshToken');
+			removeTokenCookie(res);
 
 			res.status(httpStatus.OK).json({ msg: 'You have been logged out from all accounts successfully.' });
 		} catch (error) {

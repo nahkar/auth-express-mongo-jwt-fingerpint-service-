@@ -1,10 +1,6 @@
-import dotenv from 'dotenv';
-
 import { ActivateService } from './activate.service';
 
 import type { NextFunction, Request, Response } from 'express';
-
-dotenv.config();
 
 export class ActivateController {
 	constructor(private activateService = new ActivateService()) {}

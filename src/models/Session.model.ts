@@ -1,10 +1,7 @@
 import { Schema, Types, model } from 'mongoose';
-import dotenv from 'dotenv';
 import { getSeesionExpiresDate } from '@helpers/time';
 
 import type { ISession } from '@interfaces/session.interface';
-
-dotenv.config();
 
 const SessionSchema = new Schema({
 	userId: {

@@ -1,12 +1,9 @@
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
 import { SessionRepository } from '@modules/session/session.repository';
 
 import type { JwtPayload } from 'jsonwebtoken';
 import type { CreateSessionT, SearchParamsUpdateOrCreateSessionT, TokenPayloadT, UpdateParamsUpdateOrCreateSessionT } from './types';
 import type { Types } from 'mongoose';
-
-dotenv.config();
 
 class SessionService {
 	constructor(private sessionRepository = new SessionRepository()) {}
